@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express()
 
@@ -31,6 +31,22 @@ async function run() {
     // get foods 
     app.get('/foods', async(req,res) => {
         const result = await foodCollection.find().toArray()
+        res.send(result)
+    })
+
+    // get a food by email
+    app.get("/food/:email", async(req,res) =>{
+        console.log(req.params.email);
+        const result = await foodCollection.find({email: req.params.email}).toArray()
+        res.send(result)
+    })
+
+    //  delete a single food 
+    app.delete('/food/:id', async(req,res) =>{
+        const id = req.params.id;
+        console.log(id)
+        const query = {_id: new ObjectId(id)}
+        const result = await foodCollection.deleteOne(query)
         res.send(result)
     })
     // post foods to the the server and mongodb
