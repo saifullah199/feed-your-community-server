@@ -34,6 +34,34 @@ async function run() {
         res.send(result)
     })
 
+    // get food by id
+    app.get('/foods/:id', async(req,res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await foodCollection.findOne(query)
+      res.send(result)
+    }) 
+
+    // update a food
+    app.put('/food/:id', async(req,res) => {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)}
+      const options = {upsert: true}
+      const updatedFood = req.body;
+      const food = {
+        $set: {
+          name:updatedFood.name, 
+          quantity:updatedFood.quantity, 
+          location:updatedFood.location, 
+          date:updatedFood.date, 
+          notes:updatedFood.notes,
+          foodImage:updatedFood.foodImage
+        }
+      }
+      const result = await foodCollection.updateOne(filter, food, options )
+      res.send(result)
+    })
+
     // get a food by email
     app.get("/food/:email", async(req,res) =>{
         console.log(req.params.email);
