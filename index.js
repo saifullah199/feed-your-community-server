@@ -27,6 +27,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const foodCollection = client.db('foodDB').collection('foods')
+    const requestCollection = client.db('foodDB').collection('myReqs')
 
     // get foods 
     app.get('/foods', async(req,res) => {
@@ -84,6 +85,28 @@ async function run() {
         const result = await foodCollection.insertOne(newFood)
         res.send(result)
 
+    })
+
+    // post request food data to the DB
+    app.post('/single', async(req,res) => {
+      const newReqs = req.body
+      console.log(newReqs)
+      const result = await requestCollection.insertOne(newReqs)
+      res.send(result)
+      
+    })
+
+    // get all requested food
+    app.get("/single", async(req,res) => {
+        const result = await requestCollection.find().toArray()
+        res.send(result)
+    })
+
+    // get a request food by email
+    app.get("/singlefood/:email", async(req,res) =>{
+        console.log(req.params.email);
+        const result = await requestCollection.find({email: req.params.email}).toArray()
+        res.send(result)
     })
     
     // Send a ping to confirm a successful connection
