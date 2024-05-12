@@ -78,6 +78,8 @@ async function run() {
         const result = await foodCollection.deleteOne(query)
         res.send(result)
     })
+
+
     // post foods to the the server and mongodb
     app.post('/foods', async(req,res) => {
         const newFood = req.body
@@ -107,6 +109,18 @@ async function run() {
         console.log(req.params.email);
         const result = await requestCollection.find({email: req.params.email}).toArray()
         res.send(result)
+    })
+
+    // update request status
+    app.patch('/singlefood/:id', async(req,res) => {
+      const id = req.params.id
+      const updatedStatus = req.body;
+      const query = {_id: new ObjectId(id)}
+      const updateDoc = {
+        $set: {status:updatedStatus.status},
+      }
+      const result = await foodCollection.updateOne(query,updateDoc)
+      res.send(result)
     })
     
     // Send a ping to confirm a successful connection
