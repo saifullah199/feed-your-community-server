@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken')
+const cookieParser = require('cookie-parser')
 require('dotenv').config()
 const app = express()
 
@@ -15,6 +16,7 @@ app.use(cors({
   credentials: true 
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 
 
@@ -29,6 +31,28 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
+// middlewares
+const logger = (req,res, next) => {
+  console.log(req.method, req.url);
+  next();
+}
+
+const verifyToken = (req,res,next) => {
+  const token = req?.cookies?.token;
+  // console.log('token in the middlewre', token)
+  if(!token){
+    return res.send({message: 'unauthorized access'})
+  }
+  jwt.verify(token,process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if(err){
+      return res.status(401).send({message: 'unauthorized access'})
+    }
+    req.user = decoded;
+    next();
+  })
+  
+}
 
 async function run() {
   try {
@@ -49,6 +73,12 @@ async function run() {
       .send({success: true})
     })
 
+    app.post('/logout', async(req,res)=> {
+      const user = req.body;
+      console.log('loggging out', user);
+      res.clearCookie('token', {maxAge:0}).send({success:true})
+    })
+
     // get foods 
     app.get('/foods', async(req,res) => {
         const result = await foodCollection.find().toArray()
@@ -58,6 +88,8 @@ async function run() {
     // get food by id
     app.get('/foods/:id', async(req,res) => {
       const id = req.params.id;
+      console.log('token owner info', req.user)
+      
       const query = {_id: new ObjectId(id)}
       const result = await foodCollection.findOne(query)
       res.send(result)
@@ -84,8 +116,9 @@ async function run() {
     })
 
     // get a food by email
-    app.get("/food/:email", async(req,res) =>{
+    app.get("/food/:email", logger,verifyToken, async(req,res) =>{
         console.log(req.params.email);
+        console.log('token owner info', req.user)
         const result = await foodCollection.find({email: req.params.email}).toArray()
         res.send(result)
     })
@@ -125,8 +158,12 @@ async function run() {
     })
 
     // get a request food by email
-    app.get("/singlefood/:email", async(req,res) =>{
+    app.get("/singlefood/:email",logger,verifyToken, async(req,res) =>{
         console.log(req.params.email);
+         console.log('token owner info', req.user)
+        //  if(req.user.email !== req.query.email){
+        //   return res.status(403).send({message: 'forbidden access'})
+        //  }
         const result = await requestCollection.find({email: req.params.email}).toArray()
         res.send(result)
     })
