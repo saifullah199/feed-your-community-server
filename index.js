@@ -145,6 +145,7 @@ async function run() {
     // post request food data to the DB
     app.post('/single', async(req,res) => {
       const newReqs = req.body
+
       console.log(newReqs)
       const result = await requestCollection.insertOne(newReqs)
       res.send(result)
