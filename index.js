@@ -11,7 +11,9 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(cors({
   origin: [
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'https://elegant-smakager-6f5327.netlify.app',
+    'https://timely-beignet-e640dc.netlify.app'
   ],
   credentials: true 
 }));
@@ -118,7 +120,7 @@ async function run() {
       const updatedFood = req.body;
       const food = {
         $set: {
-          name:updatedFood.name, 
+          foodName: updatedFood.foodName, 
           quantity:updatedFood.quantity, 
           location:updatedFood.location, 
           date:updatedFood.date, 
