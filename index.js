@@ -85,6 +85,21 @@ async function run() {
         res.send(result)
     })
 
+    // get all foods data from db for search & sort
+    app.get('/all-foods', async(req,res) =>{
+      const sort = req.query.sort
+      const search = req.query.search
+
+      let query ={
+        foodName: {$regex: search, $options: 'i'},
+      }
+      let options ={}
+      if (sort) {
+        options =  {sort: {ExpiredDate: sort === 'asc' ? 1 : -1}}
+      }
+      const result = await foodCollection.find(query,options).toArray()
+      res.send(result)
+    })
     // get food by id
     app.get('/foods/:id', async(req,res) => {
       const id = req.params.id;
